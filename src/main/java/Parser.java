@@ -44,7 +44,7 @@ public class Parser {
             String time = new SimpleDateFormat("yyyy-MM-dd HH:ss").format(block.getTime());
             String blockHash = block.getHashAsString();
             String parentBlock = block.getPrevBlockHash().toString();
-            BlockInfoMap blockInfoMap = parseTransactions(block.getTransactions());
+            BlockInfoMap blockInfoMap = ParserWithDatabase.parseTransactions(block.getTransactions());
             System.out.println(time+" "+blockHash+" "+blockInfoMap.printOccurrence());
             System.out.println(time+" "+blockHash+" "+blockInfoMap.printAmount());
 
@@ -71,26 +71,6 @@ public class Parser {
             sb.append(String.format("%02x", b));
         return sb.toString();
     }
-    private static BlockInfoMap parseTransactions(List<Transaction> transactions) {
-        BlockInfoMap infoMap = new BlockInfoMap();
-        for(Transaction tr:transactions){
-            if(tr.isCoinBase()){
-                for(TransactionOutput output: tr.getOutputs()){
-                    String address =extractOutputAddress(output.getScriptPubKey());
-                    infoMap.addMinerAddress(address);
-                }
-            }
-           List<TransactionInput> inputs= tr.getInputs();
-           List<TransactionOutput> outputs= tr.getOutputs();
-           int inputSize= inputs.size();
-           int outputSize= outputs.size();
-            infoMap.addOccurrence(inputSize,outputSize);
-            infoMap.addAmount(inputSize,outputSize,tr.getOutputSum());
-            infoMap.addFee(tr.getFee());
-        }
-        return infoMap;
-    }
-
 
     // The method returns a list of files in a directory according to a certain
     // pattern (block files have name blkNNNNN.dat)
