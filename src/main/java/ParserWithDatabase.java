@@ -6,9 +6,8 @@ import org.bitcoinj.script.ScriptPattern;
 import org.bitcoinj.utils.BlockFileLoader;
 
 import java.io.File;
-import java.util.*;
 import java.sql.*;
-import java.sql.SQLException;
+import java.util.*;
 
 public class ParserWithDatabase {
 
@@ -56,7 +55,7 @@ public class ParserWithDatabase {
             blockInfoMap.add(blockInfo);
             if (blockInfoMap.size() == 1000) {
                 saveBlockInfoToDatabase(blockInfoMap);
-                System.out.println("Slatest saved block time is " + blockTime);
+                System.out.println("Latest saved block time is " + blockTime);
                 blockInfoMap.clear();
             }
             //System.out.println(time+" "+blockHash+" "+blockInfo.printOccurrence());
