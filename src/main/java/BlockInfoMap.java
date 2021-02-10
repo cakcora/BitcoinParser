@@ -1,9 +1,7 @@
 import org.bitcoinj.core.Coin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 public class BlockInfoMap {
     final int chainletDimension =20;
@@ -12,6 +10,9 @@ public class BlockInfoMap {
 
     List<Coin> fees;
     private List<String> minerAddressList;
+    private String blockHash;
+    private String parentHash;
+    private Timestamp blockTimestamp;
 
     String printOccurrence(){
         StringBuffer bf = new StringBuffer();
@@ -43,6 +44,13 @@ public class BlockInfoMap {
         fees = new ArrayList<Coin>();
         minerAddressList = new ArrayList();
     }
+
+    public void setBlockHash(String blockHash) {
+        this.blockHash = blockHash;
+    }
+public void setParentHash(String parentHash){
+        this.parentHash=parentHash;
+}
     int convertToChainletDimension(int i){
         if(i>chainletDimension){
             i = chainletDimension;
@@ -84,5 +92,29 @@ public class BlockInfoMap {
 
     public void addMinerAddress(String address) {
         this.minerAddressList.add(address);
+    }
+
+    public String getBlockHash() {
+        return blockHash;
+    }
+
+    public Map<Integer, Map<Integer, Integer>> getOccurrences() {
+        return occurrenceHolder;
+    }
+
+    public Map<Integer, Map<Integer, Long>> getAmounts() {
+        return amountHolder;
+    }
+
+    public String getParentHash() {
+        return parentHash;
+    }
+
+    public void setTimestamp(Timestamp time) {
+        this.blockTimestamp =time;
+    }
+
+    public Timestamp getBlockTimeStamp() {
+        return this.blockTimestamp;
     }
 }
