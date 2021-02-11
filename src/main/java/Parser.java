@@ -1,12 +1,17 @@
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import org.bitcoinj.core.*;
+import org.bitcoinj.core.Block;
+import org.bitcoinj.core.Context;
+import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptPattern;
 import org.bitcoinj.utils.BlockFileLoader;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 
 public class Parser {
 
@@ -15,6 +20,7 @@ public class Parser {
     // it, or use any other directory with blk*dat files.
     static String BitcoinBlockDirectory = "C:/Users/etr/AppData/Roaming/Bitcoin/blocks/";
     static NetworkParameters np = new MainNetParams();
+
     // A simple method with everything in it
     public static void start() {
         // Just some initial setup
@@ -44,7 +50,7 @@ public class Parser {
             String time = new SimpleDateFormat("yyyy-MM-dd HH:ss").format(block.getTime());
             String blockHash = block.getHashAsString();
             String parentBlock = block.getPrevBlockHash().toString();
-            BlockInfoMap blockInfoMap = ParserWithDatabase.parseTransactions(block.getTransactions());
+            BlockInfoMap blockInfoMap = ChainletExtractor.parseTransactions(block.getTransactions());
             System.out.println(time+" "+blockHash+" "+blockInfoMap.printOccurrence());
             System.out.println(time+" "+blockHash+" "+blockInfoMap.printAmount());
 

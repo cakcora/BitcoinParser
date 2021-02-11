@@ -9,7 +9,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.*;
 
-public class ParserWithDatabase {
+public class ChainletExtractor {
 
     // Location of block files. This is where your blocks are located.
     // Check the documentation of Bitcoin Core if you are using
@@ -123,7 +123,7 @@ public class ParserWithDatabase {
     }
 
 
-    private static String extractOutputAddress(Script script) {
+    static String extractOutputAddress(Script script) {
 
         String address;
         if (ScriptPattern.isP2PKH(script) || ScriptPattern.isP2WPKH(script)
@@ -133,8 +133,10 @@ public class ParserWithDatabase {
             address = byteArrayToHex(ScriptPattern.extractKeyFromP2PK(script));
         else if (ScriptPattern.isSentToMultisig(script))
             address = "unknownmultisig";
-        else
-            address = "unknown";
+        else if (ScriptPattern.isWitnessCommitment(script)) {
+            address = "SegWit";
+        } else address = "unknown";
+
         return address;
     }
 
@@ -172,7 +174,7 @@ public class ParserWithDatabase {
 
     // The method returns a list of files in a directory according to a certain
     // pattern (block files have name blkNNNNN.dat)
-    private static List<File> buildList() {
+    static List<File> buildList() {
         List<File> list = new LinkedList<File>();
         for (int i = 0; true; i++) {
             File file = new File(BitcoinBlockDirectory + String.format(Locale.US, "blk%05d.dat", i));
