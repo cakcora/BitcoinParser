@@ -60,4 +60,14 @@ public class Output {
     public int getIndex() {
         return index;
     }
+
+    @Override
+    public String toString() {
+        return "Output{" +
+                "txHashId='" + txHashId + '\'' +
+                ", index=" + index +
+                ", value=" + value +
+                ", address='" + address + '\'' +
+                '}';
+    }
 }

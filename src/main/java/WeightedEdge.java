@@ -18,4 +18,15 @@ public class WeightedEdge {
     public String getKey(char ch) {
         return output.getTxHashId() + ch + output.getIndex();
     }
+
+    @Override
+    public String toString() {
+        return "WeightedEdge{" +
+                "output=" + output.toString() +
+                '}';
+    }
+
+    public Output getOutput() {
+        return output;
+    }
 }

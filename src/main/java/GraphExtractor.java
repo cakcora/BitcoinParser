@@ -1,6 +1,7 @@
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.Pair;
 import org.bitcoinj.core.*;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.script.ScriptException;
@@ -130,18 +131,25 @@ public class GraphExtractor {
         graph.addVertex(newNode);
         Collection<WeightedEdge> e = graph.getOutEdges(node);
         WeightedEdge ed = e.iterator().next();
-        char keySepChar = ' ';
-        String key = output.getTxHashId() + "_" + output.getIndex();
-        for (WeightedEdge inEdge : graph.getInEdges(output.getAddress())) {
-            if (inEdge.getKey(keySepChar).equals(key)) {
-                System.out.println(inEdge.toString());
-                inEdge.setValue(ed.getValue());
-                System.out.println("new edge" + inEdge.toString());
+        System.out.println(node + " " + ed.toString());
+        char keySepChar = '_';
+        long value = 0;
+        for (WeightedEdge inEdge : graph.getInEdges(newNode)) {
+            if (inEdge.getKey(keySepChar).equals(node)) {
+                value = inEdge.getValue();
+                break;
             }
         }
-        int u = 0;
+        Pair vertices = graph.getEndpoints(ed);
+        String fromTx = (String) vertices.getFirst();
+        Output o2 = ed.getOutput();
 
-
+        o2.setValue(value);
+        WeightedEdge newEdge = new WeightedEdge(o2, ++edgeCount);
+        System.out.println(fromTx + "->" + newNode);
+        System.out.println(newEdge.toString());
+        graph.addEdge(newEdge, fromTx, newNode);
+        graph.removeVertex(node);
     }
 
 
