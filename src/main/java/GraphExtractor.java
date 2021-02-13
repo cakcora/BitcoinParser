@@ -52,7 +52,7 @@ public class GraphExtractor {
         // it builds a list of blocks. We iterate over it using the following
         // for loop
         DirectedSparseGraph<String, WeightedEdge> graph = new DirectedSparseGraph();
-        Map<String, String> outputAddressMap = new HashMap<>();
+        Map<String, Output> outputAddressMap = new HashMap<>();
         for (Block block : loader) {
 
             // This gives you an idea of the progress
@@ -86,7 +86,7 @@ public class GraphExtractor {
     }
 
     void parseTransactions(DirectedSparseGraph<String, WeightedEdge> graph,
-                           Map<String, String> outputAddressMap,
+                           Map<String, Output> outputAddressMap,
                            List<Transaction> transactions) {
 
 
@@ -103,14 +103,21 @@ public class GraphExtractor {
                 String txNodeId = tr.getTxId().toString();
                 graph.addVertex(txNodeId);
                 for (TransactionInput input : inputs) {
-                    String trInputNodeId = input.getParentTransaction().getTxId().toString() + "_" + input.getIndex();
-                    graph.addEdge(new WeightedEdge(-1, ++edgeCount), trInputNodeId, txNodeId);
+                    String parentTxId = input.getParentTransaction().getTxId().toString();
+                    int parentIndex = input.getIndex();
+                    String trInputNodeId = parentTxId + "_" + parentIndex;
+                    Output promised = new Output(parentTxId, parentIndex);
+                    WeightedEdge edge = new WeightedEdge(promised, ++edgeCount);
+                    graph.addEdge(edge, trInputNodeId, txNodeId);
                 }
                 for (TransactionOutput output : outputs) {
                     String trOutputNodeId = txNodeId + "_" + output.getIndex();
                     String address = ChainletExtractor.extractOutputAddress(output.getScriptPubKey());
-                    graph.addEdge(new WeightedEdge(output.getValue().value, ++edgeCount), txNodeId, address);
-                    outputAddressMap.put(trOutputNodeId, address);
+                    Coin value = output.getValue();
+                    Output promised = new Output(output);
+                    graph.addEdge(new WeightedEdge(promised, ++edgeCount), txNodeId, address);
+                    Output otp = new Output(txNodeId, address, output.getIndex(), value);
+                    outputAddressMap.put(trOutputNodeId, otp);
                 }
             } catch (ScriptException e) {
                 System.out.println("Skipping " + tr.hashCode() + " due to script errors: " + tr.toString());
@@ -118,17 +125,23 @@ public class GraphExtractor {
         }
     }
 
-    private void replaceVertex(DirectedGraph<String, WeightedEdge> graph, String node, String newNode) {
+    private void replaceVertex(DirectedGraph<String, WeightedEdge> graph, String node, Output output) {
+        String newNode = output.getAddress();
         graph.addVertex(newNode);
-        for (WeightedEdge edge : graph.getInEdges(node)) {
-            String inNeighbor = graph.getSource(edge);
-            graph.addEdge(new WeightedEdge(edge.getAmount(), ++edgeCount), inNeighbor, newNode);
+        Collection<WeightedEdge> e = graph.getOutEdges(node);
+        WeightedEdge ed = e.iterator().next();
+        char keySepChar = ' ';
+        String key = output.getTxHashId() + "_" + output.getIndex();
+        for (WeightedEdge inEdge : graph.getInEdges(output.getAddress())) {
+            if (inEdge.getKey(keySepChar).equals(key)) {
+                System.out.println(inEdge.toString());
+                inEdge.setValue(ed.getValue());
+                System.out.println("new edge" + inEdge.toString());
+            }
         }
-        for (WeightedEdge edge : graph.getOutEdges(node)) {
-            String outneighbor = graph.getSource(edge);
-            graph.addEdge(new WeightedEdge(edge.getAmount(), ++edgeCount), newNode, outneighbor);
-        }
-        graph.removeVertex(node);
+        int u = 0;
+
+
     }
 
 

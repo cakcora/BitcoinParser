@@ -1,28 +1,21 @@
-import java.util.Objects;
-
 public class WeightedEdge {
-    long amount;
-    long id;
+    Output output;
+    long edgeId;
 
-    WeightedEdge(long amount, long id) {
-        this.amount = amount;
-        this.id = id;
+    public WeightedEdge(Output output, long id) {
+        this.edgeId = id;
+        this.output = output;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        WeightedEdge that = (WeightedEdge) o;
-        return id == that.id;
+    public long getValue() {
+        return output.getValue();
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    public void setValue(long value) {
+        this.output.setValue(value);
     }
 
-    public long getAmount() {
-        return amount;
+    public String getKey(char ch) {
+        return output.getTxHashId() + ch + output.getIndex();
     }
 }
