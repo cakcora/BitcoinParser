@@ -15,14 +15,17 @@ public class WeightedEdge {
         this.output.setValue(value);
     }
 
+    public String getAddress() {
+        return output.getTxHashId();
+    }
+
     public String getKey(char ch) {
         return output.getTxHashId() + ch + output.getIndex();
     }
 
     @Override
     public String toString() {
-        return "WeightedEdge{" +
-                "output=" + output.toString() +
+        return "WeightedEdge{" + output.toString() +
                 '}';
     }
 

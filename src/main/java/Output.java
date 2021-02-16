@@ -70,4 +70,8 @@ public class Output {
                 ", address='" + address + '\'' +
                 '}';
     }
+
+    public void setAddress(String newAddress) {
+        this.address = newAddress;
+    }
 }

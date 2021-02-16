@@ -23,7 +23,7 @@ public class GraphExtractor {
     static String BitcoinBlockDirectory = "C:/Users/etr/AppData/Roaming/Bitcoin/blocks/";
     static NetworkParameters np = new MainNetParams();
     long edgeCount = 0;
-
+    char keySepChar = '_';
     private static List<File> lastFiles(int datNumberId) {
         ArrayList<File> f = new ArrayList<>();
         for (int i = datNumberId; true; i++) {
@@ -72,17 +72,17 @@ public class GraphExtractor {
             // we will both create graph and keep a map of output->address
             parseTransactions(graph, outputAddressMap, Objects.requireNonNull(block.getTransactions()));
         } // End of iteration over blocks
+
+
         int count = 0;
-        HashSet<String> addresses = new HashSet<>();
-        addresses.addAll(graph.getVertices());
-        for (Object n : addresses) {
-            String node = n.toString();
+        HashSet<String> addresses = new HashSet<>(graph.getVertices());
+        for (String node : addresses) {
             if (outputAddressMap.containsKey(node)) {
                 replaceVertex(graph, node, outputAddressMap.get(node));
                 count++;
             }
         }
-        System.out.println(count + " transaction outputs have been replaced with their addresses.");
+        System.out.println(count + " transaction outputs have been replaced with their addresses. Graph order is " + graph.getVertexCount());
         return graph;
     }
 
@@ -93,26 +93,31 @@ public class GraphExtractor {
 
         for (Transaction tr : transactions) {
             try {
-                if (tr.isCoinBase()) {
-                    for (TransactionOutput output : tr.getOutputs()) {
-                        String address = ChainletExtractor.extractOutputAddress(output.getScriptPubKey());
-                        graph.addVertex(address);
-                    }
-                }
                 List<TransactionInput> inputs = tr.getInputs();
                 List<TransactionOutput> outputs = tr.getOutputs();
                 String txNodeId = tr.getTxId().toString();
                 graph.addVertex(txNodeId);
-                for (TransactionInput input : inputs) {
-                    String parentTxId = input.getParentTransaction().getTxId().toString();
-                    int parentIndex = input.getIndex();
-                    String trInputNodeId = parentTxId + "_" + parentIndex;
-                    Output promised = new Output(parentTxId, parentIndex);
-                    WeightedEdge edge = new WeightedEdge(promised, ++edgeCount);
-                    graph.addEdge(edge, trInputNodeId, txNodeId);
+
+                if (tr.isCoinBase()) {
+                    txNodeId = "CB_" + txNodeId;
+                    for (TransactionOutput output : tr.getOutputs()) {
+                        String address = ChainletExtractor.extractOutputAddress(output.getScriptPubKey());
+                        graph.addVertex(address);
+                    }
+                } else {
+                    for (TransactionInput input : inputs) {
+                        String prevTxHash = input.getOutpoint().getHash().toString();
+                        long index = input.getOutpoint().getIndex();
+
+                        String trInputNodeId = prevTxHash + keySepChar + index;
+                        Output promised = new Output(prevTxHash, (int) index);
+                        WeightedEdge edge = new WeightedEdge(promised, ++edgeCount);
+                        graph.addEdge(edge, trInputNodeId, txNodeId);
+                    }
                 }
+
                 for (TransactionOutput output : outputs) {
-                    String trOutputNodeId = txNodeId + "_" + output.getIndex();
+                    String trOutputNodeId = txNodeId + keySepChar + output.getIndex();
                     String address = ChainletExtractor.extractOutputAddress(output.getScriptPubKey());
                     Coin value = output.getValue();
                     Output promised = new Output(output);
@@ -130,25 +135,17 @@ public class GraphExtractor {
         String newNode = output.getAddress();
         graph.addVertex(newNode);
         Collection<WeightedEdge> e = graph.getOutEdges(node);
+        if (e.size() > 1)
+            System.out.println("Error: One output seems to be spent more than once: " + output.toString());
         WeightedEdge ed = e.iterator().next();
-        System.out.println(node + " " + ed.toString());
-        char keySepChar = '_';
-        long value = 0;
-        for (WeightedEdge inEdge : graph.getInEdges(newNode)) {
-            if (inEdge.getKey(keySepChar).equals(node)) {
-                value = inEdge.getValue();
-                break;
-            }
-        }
-        Pair vertices = graph.getEndpoints(ed);
-        String fromTx = (String) vertices.getFirst();
+        long value = output.getValue();
         Output o2 = ed.getOutput();
-
         o2.setValue(value);
+        o2.setAddress(newNode);
+        Pair<String> endpoints = graph.getEndpoints(ed);
+        String txAddress = endpoints.getSecond();
         WeightedEdge newEdge = new WeightedEdge(o2, ++edgeCount);
-        System.out.println(fromTx + "->" + newNode);
-        System.out.println(newEdge.toString());
-        graph.addEdge(newEdge, fromTx, newNode);
+        graph.addEdge(newEdge, newNode, txAddress);
         graph.removeVertex(node);
     }
 
