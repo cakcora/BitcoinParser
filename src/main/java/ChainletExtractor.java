@@ -187,12 +187,11 @@ public class ChainletExtractor {
         return list;
     }
 
-    private static List<File> lastFile() {
+    static List<File> lastFile() {
         File lastFile = null;
         for (int i = 0; true; i++) {
             File file = new File(BitcoinBlockDirectory + String.format(Locale.US, "blk%05d.dat", i));
             if (!file.exists()) {
-                System.out.println(file.toString() + " does not exist (this is normal).");
                 break;
             }
             lastFile = file;

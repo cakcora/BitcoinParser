@@ -1,18 +1,23 @@
 import org.bitcoinj.core.Coin;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BlockInfoMap {
     final int chainletDimension =20;
     Map<Integer, Map<Integer,Integer>> occurrenceHolder;
-    Map<Integer, Map<Integer, Long>>  amountHolder;
+    Map<Integer, Map<Integer, Long>> amountHolder;
+    static final int BTC = 10 ^ 8;
 
     List<Coin> fees;
-    private List<String> minerAddressList;
+    private final List<String> minerAddressList;
     private String blockHash;
     private String parentHash;
     private Timestamp blockTimestamp;
+    private final HashMap<String, Long> whales;
 
     String printOccurrence(){
         StringBuffer bf = new StringBuffer();
@@ -43,16 +48,19 @@ public class BlockInfoMap {
         amountHolder =  new HashMap<>();
         fees = new ArrayList<Coin>();
         minerAddressList = new ArrayList();
+        whales = new HashMap<String, Long>();
     }
 
     public void setBlockHash(String blockHash) {
         this.blockHash = blockHash;
     }
-public void setParentHash(String parentHash){
-        this.parentHash=parentHash;
-}
-    int convertToChainletDimension(int i){
-        if(i>chainletDimension){
+
+    public void setParentHash(String parentHash) {
+        this.parentHash = parentHash;
+    }
+
+    int convertToChainletDimension(int i) {
+        if (i > chainletDimension) {
             i = chainletDimension;
         }
         return i;
@@ -111,10 +119,56 @@ public void setParentHash(String parentHash){
     }
 
     public void setTimestamp(Timestamp time) {
-        this.blockTimestamp =time;
+        this.blockTimestamp = time;
     }
 
     public Timestamp getBlockTimeStamp() {
         return this.blockTimestamp;
+    }
+
+    public void addWhaleAmount(String address, long value) {
+        if (!whales.containsKey(address)) {
+            whales.put(address, 0L);
+        }
+        whales.put(address, whales.get(address) + value);
+    }
+
+    public int getWhaleCount() {
+        return whales.size();
+    }
+
+    public int getChainletCount() {
+        int count = 0;
+        for (int i : occurrenceHolder.keySet()) {
+            for (int j : occurrenceHolder.get(i).keySet()) {
+                count += occurrenceHolder.get(i).get(j);
+            }
+        }
+        return count;
+    }
+
+    public long getChainletAmount() {
+        long sum = 0;
+        for (int i : amountHolder.keySet()) {
+            for (int j : amountHolder.get(i).keySet()) {
+                sum += amountHolder.get(i).get(j);
+            }
+        }
+        return sum;
+    }
+
+    public String[] getMaxWhale() {
+        long max = 0;
+        String whalest = null;
+        for (String whale : whales.keySet()) {
+            Long max1 = whales.get(whale);
+            if (max1 > max) {
+                whalest = whale;
+                max = max1;
+            }
+        }
+
+
+        return new String[]{whalest, String.valueOf(max)};
     }
 }
