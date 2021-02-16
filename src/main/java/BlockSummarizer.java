@@ -2,6 +2,9 @@ import org.bitcoinj.core.*;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.script.ScriptException;
 import org.bitcoinj.utils.BlockFileLoader;
+import twitter4j.TwitterException;
+import twitter4j.conf.Configuration;
+import twitter4j.conf.ConfigurationBuilder;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -79,6 +82,18 @@ public class BlockSummarizer {
 
     // Main method: simply invoke everything
     public static void main(String[] args) throws SQLException, ClassNotFoundException, InterruptedException {
+
+        String apikey = args[0];
+        String apisecretkey = args[1];
+        String accesstoken = args[2];
+        String accesstokensecret = args[3];
+        ConfigurationBuilder twitterConfiguration = new ConfigurationBuilder();
+        twitterConfiguration.setDebugEnabled(true)
+                .setOAuthConsumerKey(apikey)
+                .setOAuthConsumerSecret(apisecretkey)
+                .setOAuthAccessToken(accesstoken)
+                .setOAuthAccessTokenSecret(accesstokensecret);
+        Configuration build = twitterConfiguration.build();
         Block lastBlock = null;
         while (true) {
 
@@ -103,6 +118,14 @@ public class BlockSummarizer {
                         infoMap.getWhaleCount() + " addresses each received 1BTC or more. Max received amount was " +
                         receiver;
                 System.out.println(content);
+                Tweeter tweeter = new Tweeter();
+                if (content.length() < 280) {
+                    try {
+                        tweeter.postTweet(content, build);
+                    } catch (TwitterException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             TimeUnit.MINUTES.sleep(2);
 
