@@ -8,6 +8,7 @@ import org.bitcoinj.utils.BlockFileLoader;
 import java.io.File;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class ChainletExtractor {
 
@@ -216,11 +217,13 @@ public class ChainletExtractor {
     }
 
     // Main method: simply invoke everything
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        Timestamp latestSeenBlockDate = searchForLatestKnownBlock();
-        System.out.println("We will start parsing from date "+latestSeenBlockDate.toString());
-        startChainParsingFrom(latestSeenBlockDate);
-
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, InterruptedException {
+        while (true) {
+            Timestamp latestSeenBlockDate = searchForLatestKnownBlock();
+            System.out.println("We will start parsing from date " + latestSeenBlockDate.toString());
+            startChainParsingFrom(latestSeenBlockDate);
+            TimeUnit.MINUTES.sleep(10);
+        }
     }
 
 }

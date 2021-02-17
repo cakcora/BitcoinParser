@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 public class DBConnection {
     static Connection getConnection() throws ClassNotFoundException, SQLException {
@@ -53,6 +54,16 @@ public class DBConnection {
         }
         if (count != 0)
             preparedOccurrenceStmt.executeBatch();
+        conn.close();
+    }
+
+    public static void savePriceToDB(LocalDateTime datetime, double btcPrice) throws SQLException, ClassNotFoundException {
+        Connection conn = DBConnection.getConnection();
+        String query = "INSERT INTO `btcprice` (`localdateandtime`, `priceinusd`) VALUES (?, ?);";
+        PreparedStatement stt = conn.prepareStatement(query);
+        stt.setObject(1, datetime);
+        stt.setDouble(2, btcPrice);
+        stt.execute();
         conn.close();
     }
 }

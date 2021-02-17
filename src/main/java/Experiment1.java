@@ -22,7 +22,7 @@ public class Experiment1 {
         HashSet<Object> addresses = new HashSet<>(graph.getVertices());
         Collection<String> vertices = new HashSet<>(graph.getVertices());
         for (String vertex : vertices) {
-            if (vertexIsATransaction(vertex)) {
+            if (vertex.length() == TRANSACTIONLENGTH) {
                 boolean deleteThisTransaction = true;
                 for (WeightedEdge edge : graph.getOutEdges(vertex)) {
                     long value = edge.getValue();
@@ -37,7 +37,7 @@ public class Experiment1 {
         System.out.println("vertex: " + graph.getVertexCount() + " for >" + filterAmount);
         System.out.println("edges: " + graph.getEdgeCount() + " for >" + filterAmount);
         for (String vertex : vertices) {
-            if (!vertexIsATransaction(vertex)) {
+            if (!(vertex.length() == TRANSACTIONLENGTH)) {
                 if (vertex.contains("2a1d65affccae")) {
                     System.out.println(vertex);
                 }
@@ -56,20 +56,8 @@ public class Experiment1 {
                 }
             }
         }
-        if (graph.containsVertex("f63519cbdf0b1f254c904ff14d9b4c8db155eaffffd86a22def2a1d65affccae_0")) {
-            System.out.println("contains f63519cbdf0b1f254c904ff14d9b4c8db155eaffffd86a22def2a1d65affccae_0");
-        }
         System.out.println("vertex: " + graph.getVertexCount() + " for >" + filterAmount);
         System.out.println("edges: " + graph.getEdgeCount() + " for >" + filterAmount);
-
-
         DBConnection.saveEdgesInNetwork(graph);
-
     }
-
-    private static boolean vertexIsATransaction(String vertex) {
-        return vertex.length() == TRANSACTIONLENGTH;
-    }
-
-
 }
